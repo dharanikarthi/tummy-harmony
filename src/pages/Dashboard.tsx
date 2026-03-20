@@ -1,21 +1,14 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Utensils, ShieldCheck, Check, X, Bell } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import StatCard from '@/components/StatCard';
 import ConditionBadge from '@/components/ConditionBadge';
-
-const weekData = [
-  { day: 'Mon', good: 3, moderate: 1, poor: 0 },
-  { day: 'Tue', good: 2, moderate: 2, poor: 1 },
-  { day: 'Wed', good: 4, moderate: 0, poor: 0 },
-  { day: 'Thu', good: 1, moderate: 3, poor: 2 },
-  { day: 'Fri', good: 3, moderate: 1, poor: 1 },
-  { day: 'Sat', good: 2, moderate: 2, poor: 0 },
-  { day: 'Sun', good: 5, moderate: 0, poor: 0 },
-];
+import StreakTracker from '@/components/StreakTracker';
+import DailyTipCard from '@/components/DailyTipCard';
+import { weekData } from '@/data/mockData';
 
 const avoidFoods = ['Spicy foods', 'Coffee', 'Alcohol', 'Citrus fruits', 'Fried foods'];
 const safeFoods = ['Bananas', 'Oats', 'Curd rice', 'Boiled vegetables', 'Idli'];
