@@ -5,6 +5,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import FoodChecker from "./pages/FoodChecker";
 import HistoryPage from "./pages/History";
+import WeeklyReport from "./pages/WeeklyReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
