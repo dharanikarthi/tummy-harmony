@@ -1,5 +1,5 @@
 import { NavLink as RouterNavLink, useLocation } from 'react-router-dom';
-import { Leaf, LayoutDashboard, Search, History, Settings } from 'lucide-react';
+import { Leaf, LayoutDashboard, Search, History, Settings, TrendingUp } from 'lucide-react';
 import DarkModeToggle from './DarkModeToggle';
 import ConditionBadge from './ConditionBadge';
 import { useUser } from '@/context/UserContext';
