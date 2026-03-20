@@ -19,6 +19,7 @@ const filterStyles = {
 export default function HistoryPage() {
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const { weeklyScore } = useUser();
+  const navigate = useNavigate();
 
   const items = mockHistory.filter((h) => activeFilter === 'All' || h.rating === activeFilter.toLowerCase());
   const goodCount = mockHistory.filter((h) => h.rating === 'good').length;
