@@ -49,6 +49,7 @@ export default function Dashboard() {
       <Sidebar />
       <div className="lg:ml-64 pb-24 lg:pb-8">
         <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
+          <DailyTipCard />
           {/* Header */}
           <div className="flex items-start justify-between animate-fade-in">
             <div>
