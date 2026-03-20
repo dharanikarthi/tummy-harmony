@@ -142,3 +142,12 @@
   50% { transform: scale(1.1); opacity: 0.2; }
   100% { transform: scale(0.8); opacity: 0.5; }
 }
+@keyframes flicker {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@media print {
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-hidden { display: none !important; }
+}

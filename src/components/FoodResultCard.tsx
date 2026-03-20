@@ -1,4 +1,5 @@
-import { X, Check, ArrowRight, Lightbulb } from 'lucide-react';
+import { ArrowRight, Lightbulb } from 'lucide-react';
+import DangerMeter from './DangerMeter';
 
 interface FoodResult {
   foodName: string;
@@ -35,6 +36,8 @@ export default function FoodResultCard({ result, onSave, onCheckAnother }: Props
           {ratingLabels[result.rating]}
         </span>
       </div>
+
+      <DangerMeter rating={result.rating} />
 
       <hr className="border-border" />
 

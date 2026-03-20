@@ -1,21 +1,14 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Utensils, ShieldCheck, Check, X, Bell } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import StatCard from '@/components/StatCard';
 import ConditionBadge from '@/components/ConditionBadge';
-
-const weekData = [
-  { day: 'Mon', good: 3, moderate: 1, poor: 0 },
-  { day: 'Tue', good: 2, moderate: 2, poor: 1 },
-  { day: 'Wed', good: 4, moderate: 0, poor: 0 },
-  { day: 'Thu', good: 1, moderate: 3, poor: 2 },
-  { day: 'Fri', good: 3, moderate: 1, poor: 1 },
-  { day: 'Sat', good: 2, moderate: 2, poor: 0 },
-  { day: 'Sun', good: 5, moderate: 0, poor: 0 },
-];
+import StreakTracker from '@/components/StreakTracker';
+import DailyTipCard from '@/components/DailyTipCard';
+import { weekData } from '@/data/mockData';
 
 const avoidFoods = ['Spicy foods', 'Coffee', 'Alcohol', 'Citrus fruits', 'Fried foods'];
 const safeFoods = ['Bananas', 'Oats', 'Curd rice', 'Boiled vegetables', 'Idli'];
@@ -56,6 +49,7 @@ export default function Dashboard() {
       <Sidebar />
       <div className="lg:ml-64 pb-24 lg:pb-8">
         <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-6">
+          <DailyTipCard />
           {/* Header */}
           <div className="flex items-start justify-between animate-fade-in">
             <div>
@@ -76,10 +70,11 @@ export default function Dashboard() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard title="Gut Score" value={`${weeklyScore}/10`} subtitle="based on recent choices" icon={<Activity className="w-5 h-5 text-primary-foreground" />} color="bg-primary" />
             <StatCard title="Foods Checked" value={checkedCount} subtitle="this week" icon={<Utensils className="w-5 h-5 text-good-foreground" />} color="bg-good" />
             <StatCard title="Safe Choices" value={`${safePercent}%`} subtitle="of foods checked" icon={<ShieldCheck className="w-5 h-5 text-moderate-foreground" />} color="bg-moderate" />
+            <StreakTracker />
           </div>
 
           {/* Chart */}
