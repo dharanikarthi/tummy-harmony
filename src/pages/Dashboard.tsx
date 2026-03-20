@@ -69,10 +69,11 @@ export default function Dashboard() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard title="Gut Score" value={`${weeklyScore}/10`} subtitle="based on recent choices" icon={<Activity className="w-5 h-5 text-primary-foreground" />} color="bg-primary" />
             <StatCard title="Foods Checked" value={checkedCount} subtitle="this week" icon={<Utensils className="w-5 h-5 text-good-foreground" />} color="bg-good" />
             <StatCard title="Safe Choices" value={`${safePercent}%`} subtitle="of foods checked" icon={<ShieldCheck className="w-5 h-5 text-moderate-foreground" />} color="bg-moderate" />
+            <StreakTracker />
           </div>
 
           {/* Chart */}
