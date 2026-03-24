@@ -7,6 +7,8 @@ import BottomNav from '@/components/BottomNav';
 import HistoryCard from '@/components/HistoryCard';
 import { useUser } from '@/context/UserContext';
 import { mockHistory } from '@/data/mockData';
+import { useInView } from '@/hooks/useInView';
+import { useCountUp } from '@/hooks/useCountUp';
 
 const filters = ['All', 'Good', 'Moderate', 'Poor'] as const;
 const filterStyles = {
@@ -20,11 +22,13 @@ export default function HistoryPage() {
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const { weeklyScore } = useUser();
   const navigate = useNavigate();
+  const [listRef, listInView] = useInView(0.05);
 
   const items = mockHistory.filter((h) => activeFilter === 'All' || h.rating === activeFilter.toLowerCase());
   const goodCount = mockHistory.filter((h) => h.rating === 'good').length;
   const modCount = mockHistory.filter((h) => h.rating === 'moderate').length;
   const poorCount = mockHistory.filter((h) => h.rating === 'poor').length;
+  const totalCount = useCountUp(mockHistory.length, 1000);
 
   const pieData = [
     { name: 'Good', value: goodCount },
@@ -41,23 +45,31 @@ export default function HistoryPage() {
       <div className="lg:ml-64 pb-24 lg:pb-8">
         <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between animate-fade-in">
+          <div className="flex items-center justify-between animate-fadeInUp">
             <h1 className="text-2xl font-bold text-foreground">Food History</h1>
-            <button onClick={() => alert('PDF export coming soon!')} className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-poor/10 text-poor text-sm font-semibold hover:bg-poor/20 transition-colors">
-              <FileText className="w-4 h-4" /> Export PDF
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => navigate('/report')} className="flex items-center gap-2 px-4 py-2 rounded-2xl border-2 border-primary text-primary text-sm font-semibold hover:bg-primary/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+                <TrendingUp className="w-4 h-4" /> Weekly Report
+              </button>
+              <button onClick={() => alert('PDF export coming soon!')} className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-poor/10 text-poor text-sm font-semibold hover:bg-poor/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
+                <FileText className="w-4 h-4" /> Export PDF
+              </button>
+            </div>
           </div>
 
           {/* Weekly Summary */}
-          <div className="bg-gradient-to-r from-primary to-good rounded-3xl p-6 text-primary-foreground flex flex-col sm:flex-row items-center gap-6 animate-fade-in">
-            <div className="w-32 h-32 flex-shrink-0">
+          <div className="bg-gradient-to-r from-primary to-good rounded-3xl p-6 text-primary-foreground flex flex-col sm:flex-row items-center gap-6 animate-fadeInUp" style={{ animationDelay: '100ms', animationFillMode: 'both', opacity: 0 }}>
+            <div className="w-32 h-32 flex-shrink-0 relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value" stroke="none">
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value" stroke="none" animationDuration={1200} animationEasing="ease-out">
                     {pieData.map((_, i) => <Cell key={i} fill={pieColors[i]} opacity={0.85} />)}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-lg font-bold text-primary-foreground">{totalCount}</span>
+              </div>
             </div>
             <div>
               <p className="text-3xl font-bold">This Week's Score: {weeklyScore}/10</p>
@@ -71,12 +83,12 @@ export default function HistoryPage() {
           </div>
 
           {/* Filters */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap animate-fadeInUp" style={{ animationDelay: '200ms', animationFillMode: 'both', opacity: 0 }}>
             {filters.map((f) => (
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-300 active:scale-[0.96] ${
                   activeFilter === f ? filterStyles[f] : 'bg-muted text-muted-foreground hover:bg-accent'
                 }`}
               >
@@ -86,9 +98,9 @@ export default function HistoryPage() {
           </div>
 
           {/* List */}
-          <div className="space-y-3">
-            {items.map((h) => (
-              <HistoryCard key={h.id} {...h} />
+          <div ref={listRef} className="space-y-3">
+            {items.map((h, i) => (
+              <HistoryCard key={h.id} {...h} index={i} />
             ))}
           </div>
         </div>
