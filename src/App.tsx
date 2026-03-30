@@ -9,6 +9,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const FoodChecker = lazy(() => import("./pages/FoodChecker"));
 const HistoryPage = lazy(() => import("./pages/History"));
 const WeeklyReport = lazy(() => import("./pages/WeeklyReport"));
+const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/check" element={<FoodChecker />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/report" element={<WeeklyReport />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

@@ -1,5 +1,5 @@
 import { NavLink as RouterNavLink, useLocation } from 'react-router-dom';
-import { Leaf, LayoutDashboard, Search, History, Settings, TrendingUp } from 'lucide-react';
+import { Leaf, LayoutDashboard, Search, History, TrendingUp, User } from 'lucide-react';
 import DarkModeToggle from './DarkModeToggle';
 import ConditionBadge from './ConditionBadge';
 import { useUser } from '@/context/UserContext';
@@ -9,11 +9,11 @@ const links = [
   { to: '/check', label: 'Check Food', icon: Search },
   { to: '/history', label: 'History', icon: History },
   { to: '/report', label: 'Weekly Report', icon: TrendingUp },
-  { to: '/dashboard', label: 'Settings', icon: Settings },
+  { to: '/profile', label: 'Profile', icon: User },
 ];
 
 export default function Sidebar() {
-  const { userName, gutCondition } = useUser();
+  const { userName } = useUser();
   const location = useLocation();
 
   return (
@@ -42,7 +42,7 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 p-4 space-y-1">
         {links.map((l) => {
-          const active = location.pathname === l.to && l.label !== 'Settings';
+          const active = location.pathname === l.to;
           return (
             <RouterNavLink
               key={l.label}
