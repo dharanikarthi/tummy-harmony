@@ -1,14 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Upload, Search, X } from 'lucide-react';
+import { ArrowLeft, Upload, Search, X, Leaf } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/context/UserContext';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import FoodResultCard from '@/components/FoodResultCard';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
-import { Leaf } from 'lucide-react';
-
-const quickSuggestions = ['Idli', 'Coffee', 'Banana', 'Biryani', 'Oats', 'Curd Rice'];
+import { foodSuggestions, foodImageMap } from '@/data/foodSuggestions';
+import { staggerDelay } from '@/utils/animations';
 
 const mockResults: Record<string, any> = {
   idli: { foodName: 'Idli', rating: 'good', explanation: 'Soft, steamed, and low in acid. Very gentle on your stomach lining and easy to digest.', alternatives: [], tip: 'Best eaten with sambar for added nutrients.' },
@@ -17,13 +16,37 @@ const mockResults: Record<string, any> = {
   biryani: { foodName: 'Biryani', rating: 'moderate', explanation: 'Contains spices and oil that may irritate your stomach. Eat only a small portion.', alternatives: ['Plain Rice', 'Curd Rice', 'Khichdi'], tip: 'Follow with a cup of buttermilk to ease digestion.' },
   oats: { foodName: 'Oats', rating: 'good', explanation: 'High in soluble fiber, helps absorb stomach acid and reduces inflammation.', alternatives: [], tip: 'Add banana slices for extra gut benefits.' },
   'curd rice': { foodName: 'Curd Rice', rating: 'good', explanation: 'Probiotic-rich and cooling. Excellent for inflamed gut.', alternatives: [], tip: 'Add cucumber for extra gut-soothing effect.' },
+  dosa: { foodName: 'Dosa', rating: 'moderate', explanation: 'Fermented batter may cause bloating. Opt for plain dosa.', alternatives: ['Idli', 'Upma'], tip: 'Avoid masala filling when stomach is sensitive.' },
+  samosa: { foodName: 'Samosa', rating: 'poor', explanation: 'Deep fried and heavy — irritates stomach lining significantly.', alternatives: ['Baked Samosa', 'Dhokla', 'Idli'], tip: 'Try baked alternatives for a safer snack.' },
+  khichdi: { foodName: 'Khichdi', rating: 'good', explanation: 'Light and easy to digest, soothes the gut beautifully.', alternatives: [], tip: 'Add a spoon of ghee for better nutrient absorption.' },
+  poha: { foodName: 'Poha', rating: 'good', explanation: 'Flattened rice is light and gentle on the stomach.', alternatives: [], tip: 'Add peanuts for protein and squeeze lemon for taste.' },
+  upma: { foodName: 'Upma', rating: 'good', explanation: 'Semolina-based dish that is light and easy to digest.', alternatives: [], tip: 'Add vegetables for extra nutrition.' },
+  chai: { foodName: 'Chai', rating: 'moderate', explanation: 'Caffeine and milk can trigger acid reflux in sensitive stomachs.', alternatives: ['Ginger Tea', 'Green Tea'], tip: 'Limit to one cup daily and avoid on empty stomach.' },
+  'paneer tikka': { foodName: 'Paneer Tikka', rating: 'moderate', explanation: 'Grilled paneer is okay but spices may cause issues.', alternatives: ['Plain Paneer', 'Cottage Cheese'], tip: 'Go easy on the marinade spices.' },
+  vada: { foodName: 'Vada', rating: 'poor', explanation: 'Deep fried — heavy on the stomach and increases acid production.', alternatives: ['Idli', 'Appam'], tip: 'Choose steamed snacks instead.' },
+  paratha: { foodName: 'Paratha', rating: 'moderate', explanation: 'Oil/ghee used in cooking can be heavy. Eat in moderation.', alternatives: ['Roti', 'Phulka'], tip: 'Use minimal oil and pair with curd.' },
+  'rajma rice': { foodName: 'Rajma Rice', rating: 'moderate', explanation: 'Kidney beans can cause gas but are nutritious in moderation.', alternatives: ['Dal Rice', 'Khichdi'], tip: 'Soak rajma overnight and cook well to reduce gas.' },
+  pongal: { foodName: 'Pongal', rating: 'good', explanation: 'South Indian comfort food that is gentle and soothing.', alternatives: [], tip: 'Ven pongal with ghee is best for gut health.' },
+  buttermilk: { foodName: 'Buttermilk', rating: 'good', explanation: 'Probiotic drink that aids digestion and cools the stomach.', alternatives: [], tip: 'Add roasted cumin and mint for extra benefits.' },
+  pizza: { foodName: 'Pizza', rating: 'poor', explanation: 'Cheese and tomato sauce increase acid reflux significantly.', alternatives: ['Homemade Toast', 'Rice Cakes'], tip: 'If craving, try a plain cheese toast instead.' },
+  'roti & dal': { foodName: 'Roti & Dal', rating: 'good', explanation: 'Balanced meal with protein and fiber. Gentle on stomach.', alternatives: [], tip: 'Use moong dal which is lightest on the stomach.' },
+  'ginger tea': { foodName: 'Ginger Tea', rating: 'good', explanation: 'Anti-inflammatory and soothes nausea. Great for gut health.', alternatives: [], tip: 'Add honey instead of sugar for extra benefits.' },
+  dal: { foodName: 'Dal', rating: 'good', explanation: 'High in protein and fiber, easy to digest when cooked well.', alternatives: [], tip: 'Moong dal is the lightest option for sensitive stomachs.' },
+  'boiled vegetables': { foodName: 'Boiled Vegetables', rating: 'good', explanation: 'Easy to digest, nutrient-rich, and gentle on the stomach.', alternatives: [], tip: 'Season with a pinch of cumin and salt.' },
 };
 
-const loadingMessages = [
-  'Analyzing your food...',
-  'Checking gut compatibility...',
-  'Generating insights...',
-];
+const loadingMessages = ['Analyzing your food...', 'Checking gut compatibility...', 'Generating insights...'];
+
+const ratingStyles = {
+  good: 'border-good/30 bg-good/5',
+  moderate: 'border-moderate/30 bg-moderate/5',
+  poor: 'border-poor/30 bg-poor/5',
+};
+const ratingDot = {
+  good: 'bg-good',
+  moderate: 'bg-moderate',
+  poor: 'bg-poor',
+};
 
 export default function FoodChecker() {
   const [tab, setTab] = useState<'upload' | 'type'>('type');
@@ -54,7 +77,7 @@ export default function FoodChecker() {
       setIsLoading(false);
       setResult(mockResults[query] || {
         foodName: name || foodInput,
-        rating: 'moderate',
+        rating: 'moderate' as const,
         explanation: `This food may have mixed effects on ${gutCondition || 'your gut'}. Eat in moderation and observe how you feel.`,
         alternatives: ['Plain Rice', 'Steamed Vegetables'],
         tip: 'Listen to your body and stop if you feel discomfort.',
@@ -86,7 +109,7 @@ export default function FoodChecker() {
     <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="lg:ml-64 pb-24 lg:pb-8">
-        <div className="p-4 lg:p-6 max-w-2xl mx-auto space-y-6">
+        <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-6">
           {/* Header */}
           <div className="animate-fadeInUp">
             <button onClick={() => navigate('/dashboard')} className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-3">
@@ -98,18 +121,9 @@ export default function FoodChecker() {
 
           {/* Tabs */}
           <div className="bg-muted rounded-2xl p-1 flex relative animate-fadeInUp" style={{ animationDelay: '100ms', animationFillMode: 'both', opacity: 0 }}>
-            <div
-              className="absolute top-1 bottom-1 bg-card shadow-sm rounded-xl transition-all duration-300"
-              style={{ width: '50%', left: tab === 'upload' ? '0%' : '50%' }}
-            />
+            <div className="absolute top-1 bottom-1 bg-card shadow-sm rounded-xl transition-all duration-300" style={{ width: '50%', left: tab === 'upload' ? '0%' : '50%' }} />
             {(['upload', 'type'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => { setTab(t); setResult(null); }}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 relative z-10 ${
-                  tab === t ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
+              <button key={t} onClick={() => { setTab(t); setResult(null); }} className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 relative z-10 ${tab === t ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                 {t === 'upload' ? 'Upload Photo' : 'Type Food Name'}
               </button>
             ))}
@@ -125,9 +139,7 @@ export default function FoodChecker() {
                     onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); }}
-                    className={`min-h-[16rem] border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 relative overflow-hidden ${
-                      dragOver ? 'border-primary bg-primary/5 scale-[1.02]' : image ? 'border-border' : 'border-border hover:border-primary/50'
-                    }`}
+                    className={`min-h-[16rem] border-2 border-dashed rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 relative overflow-hidden ${dragOver ? 'border-primary bg-primary/5 scale-[1.02]' : image ? 'border-border' : 'border-border hover:border-primary/50'}`}
                   >
                     {image ? (
                       <>
@@ -162,21 +174,45 @@ export default function FoodChecker() {
                       className="w-full pl-12 pr-10 py-3.5 border-2 border-border rounded-2xl bg-card text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-all duration-300"
                     />
                     {foodInput && (
-                      <button onClick={() => { setFoodInput(''); }} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors animate-fadeInUp">
+                      <button onClick={() => setFoodInput('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors animate-fadeInUp">
                         <X className="w-4 h-4" />
                       </button>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {quickSuggestions.map((s, i) => (
-                      <button key={s} onClick={() => setFoodInput(s)} className="px-4 py-1.5 rounded-full bg-secondary text-secondary-foreground text-sm font-medium hover:bg-primary/10 hover:text-primary hover:scale-[1.08] active:scale-[0.95] transition-all duration-200 animate-popIn" style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'both', opacity: 0 }}>
-                        {s}
-                      </button>
-                    ))}
-                  </div>
+
                   <button disabled={!foodInput.trim()} onClick={() => analyze()} className="mt-4 w-full bg-primary text-primary-foreground rounded-2xl py-3.5 font-semibold disabled:opacity-40 hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)] transition-all duration-200">
                     Analyze This Food
                   </button>
+
+                  {/* Food Suggestions Grid */}
+                  <div className="mt-6">
+                    <h3 className="font-semibold text-foreground mb-3">Popular Indian Foods</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {foodSuggestions.map((food, i) => (
+                        <button
+                          key={food.name}
+                          onClick={() => { setFoodInput(food.name); analyze(food.name); }}
+                          className={`relative rounded-2xl overflow-hidden border-2 ${ratingStyles[food.rating]} hover:shadow-lg hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 group animate-fadeInUp`}
+                          style={staggerDelay(i, 40)}
+                        >
+                          <div className="aspect-square overflow-hidden">
+                            <img src={food.image} alt={food.name} loading="lazy" width={256} height={256} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                          <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                            <p className="text-white font-semibold text-sm drop-shadow-lg">{food.name}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <div className={`w-2 h-2 rounded-full ${ratingDot[food.rating]}`} />
+                              <span className="text-white/80 text-xs capitalize">{food.rating}</span>
+                            </div>
+                          </div>
+                          <div className="absolute top-2 right-2">
+                            <span className="text-[10px] bg-black/40 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">{food.category}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </>
               )}
             </div>

@@ -1,14 +1,22 @@
 import { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 import { FileText, MessageCircle, Copy, Check, Leaf } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import ConditionBadge from '@/components/ConditionBadge';
-import { mockHistory, weekData } from '@/data/mockData';
+import { mockHistory, weekData, gutScoreHistory, mealTimeData } from '@/data/mockData';
 import { useInView } from '@/hooks/useInView';
 import { useCountUp } from '@/hooks/useCountUp';
 import { staggerDelay } from '@/utils/animations';
+
+const radarData = [
+  { subject: 'Breakfast', A: 8, fullMark: 10 },
+  { subject: 'Lunch', A: 6, fullMark: 10 },
+  { subject: 'Snacks', A: 4, fullMark: 10 },
+  { subject: 'Dinner', A: 7, fullMark: 10 },
+  { subject: 'Drinks', A: 5, fullMark: 10 },
+];
 
 export default function WeeklyReport() {
   const { userName, weeklyScore } = useUser();
@@ -16,6 +24,9 @@ export default function WeeklyReport() {
   const [scoreRef, scoreInView] = useInView(0.3);
   const [chartRef, chartInView] = useInView(0.2);
   const [foodsRef, foodsInView] = useInView(0.1);
+  const [pieRef, pieInView] = useInView(0.2);
+  const [trendRef, trendInView] = useInView(0.2);
+  const [radarRef, radarInView] = useInView(0.2);
 
   const goodCount = mockHistory.filter((h) => h.rating === 'good').length;
   const modCount = mockHistory.filter((h) => h.rating === 'moderate').length;
@@ -39,6 +50,13 @@ export default function WeeklyReport() {
 
   const topGood = mockHistory.filter((h) => h.rating === 'good').slice(0, 3);
   const topPoor = mockHistory.filter((h) => h.rating === 'poor').slice(0, 3);
+
+  const pieData = [
+    { name: 'Good', value: goodCount },
+    { name: 'Moderate', value: modCount },
+    { name: 'Poor', value: poorCount },
+  ];
+  const pieColors = ['hsl(var(--good))', 'hsl(var(--moderate))', 'hsl(var(--poor))'];
 
   const summaryText = `My GutSense Weekly Report!\nGut Score: ${weeklyScore}/10\nGood foods: ${goodCount}\nCheck yours at gutsense.app`;
 
@@ -79,12 +97,7 @@ export default function WeeklyReport() {
             <div className="relative w-32 h-32">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--border))" strokeWidth="8" />
-                <circle
-                  cx="50" cy="50" r="45" fill="none"
-                  stroke={strokeColor} strokeWidth="8" strokeLinecap="round"
-                  strokeDasharray={circumference} strokeDashoffset={scoreInView ? offset : circumference}
-                  style={{ transition: 'stroke-dashoffset 1.5s ease-out' }}
-                />
+                <circle cx="50" cy="50" r="45" fill="none" stroke={strokeColor} strokeWidth="8" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={scoreInView ? offset : circumference} style={{ transition: 'stroke-dashoffset 1.5s ease-out' }} />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className={`text-3xl font-bold ${scoreColor}`}>{animatedScore}</span>
@@ -109,6 +122,40 @@ export default function WeeklyReport() {
             ))}
           </div>
 
+          {/* Pie + Radar side by side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div ref={pieRef} className={`bg-card rounded-2xl p-5 border border-border transition-all duration-500 ${pieInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+              <h2 className="font-semibold text-foreground mb-3 text-sm">Food Rating Breakdown</h2>
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" stroke="none" isAnimationActive={pieInView} animationDuration={1200}>
+                    {pieData.map((_, i) => <Cell key={i} fill={pieColors[i]} />)}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex justify-center gap-4 mt-2">
+                {pieData.map((p, i) => (
+                  <div key={p.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pieColors[i] }} />
+                    {p.name} ({p.value})
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div ref={radarRef} className={`bg-card rounded-2xl p-5 border border-border transition-all duration-500 ${radarInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+              <h2 className="font-semibold text-foreground mb-3 text-sm">Meal Quality Radar</h2>
+              <ResponsiveContainer width="100%" height={180}>
+                <RadarChart data={radarData}>
+                  <PolarGrid stroke="hsl(var(--border))" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                  <Radar name="Score" dataKey="A" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} isAnimationActive={radarInView} animationDuration={1200} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
           {/* Chart */}
           <div ref={chartRef} className={`bg-card rounded-2xl p-5 border border-border print:shadow-none transition-all duration-500 ${chartInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
             <h2 className="font-semibold text-foreground mb-4">Daily breakdown this week</h2>
@@ -121,6 +168,25 @@ export default function WeeklyReport() {
                 <Bar dataKey="moderate" stackId="a" fill="hsl(var(--moderate))" isAnimationActive={chartInView} animationDuration={1200} />
                 <Bar dataKey="poor" stackId="a" fill="hsl(var(--poor))" radius={[4, 4, 0, 0]} isAnimationActive={chartInView} animationDuration={1200} />
               </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Gut Score Trend */}
+          <div ref={trendRef} className={`bg-card rounded-2xl p-5 border border-border transition-all duration-500 ${trendInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+            <h2 className="font-semibold text-foreground mb-4">Gut Score Trend</h2>
+            <ResponsiveContainer width="100%" height={180}>
+              <AreaChart data={gutScoreHistory}>
+                <defs>
+                  <linearGradient id="reportScoreGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 10]} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
+                <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#reportScoreGrad)" strokeWidth={2} isAnimationActive={trendInView} animationDuration={1200} />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
 
