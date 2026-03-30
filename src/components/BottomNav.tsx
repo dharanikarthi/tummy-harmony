@@ -1,11 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Search, History, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Search, History, User } from 'lucide-react';
 
 const items = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/dashboard', label: 'Home', icon: LayoutDashboard },
   { to: '/check', label: 'Check', icon: Search },
   { to: '/history', label: 'History', icon: History },
-  { to: '/report', label: 'Report', icon: TrendingUp },
+  { to: '/profile', label: 'Profile', icon: User },
 ];
 
 export default function BottomNav() {
