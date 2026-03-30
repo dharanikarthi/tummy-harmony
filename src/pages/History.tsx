@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 import { FileText, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import HistoryCard from '@/components/HistoryCard';
 import { useUser } from '@/context/UserContext';
-import { mockHistory } from '@/data/mockData';
+import { mockHistory, gutScoreHistory, mealTimeData } from '@/data/mockData';
+import { foodImageMap } from '@/data/foodSuggestions';
 import { useInView } from '@/hooks/useInView';
 import { useCountUp } from '@/hooks/useCountUp';
+import { staggerDelay } from '@/utils/animations';
 
 const filters = ['All', 'Good', 'Moderate', 'Poor'] as const;
 const filterStyles = {
@@ -18,11 +20,21 @@ const filterStyles = {
   Poor: 'bg-poor text-poor-foreground',
 };
 
+const radarData = [
+  { subject: 'Breakfast', A: 8, fullMark: 10 },
+  { subject: 'Lunch', A: 6, fullMark: 10 },
+  { subject: 'Snacks', A: 4, fullMark: 10 },
+  { subject: 'Dinner', A: 7, fullMark: 10 },
+  { subject: 'Drinks', A: 5, fullMark: 10 },
+];
+
 export default function HistoryPage() {
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const { weeklyScore } = useUser();
   const navigate = useNavigate();
   const [listRef, listInView] = useInView(0.05);
+  const [chartRef, chartInView] = useInView(0.2);
+  const [radarRef, radarInView] = useInView(0.2);
 
   const items = mockHistory.filter((h) => activeFilter === 'All' || h.rating === activeFilter.toLowerCase());
   const goodCount = mockHistory.filter((h) => h.rating === 'good').length;
@@ -82,6 +94,40 @@ export default function HistoryPage() {
             </div>
           </div>
 
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Gut Score Trend */}
+            <div ref={chartRef} className={`bg-card rounded-2xl p-5 border border-border transition-all duration-500 ${chartInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+              <h3 className="font-semibold text-foreground mb-3 text-sm">Gut Score Trend</h3>
+              <ResponsiveContainer width="100%" height={160}>
+                <AreaChart data={gutScoreHistory}>
+                  <defs>
+                    <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 10]} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
+                  <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#scoreGrad)" strokeWidth={2} isAnimationActive={chartInView} animationDuration={1200} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Meal Quality Radar */}
+            <div ref={radarRef} className={`bg-card rounded-2xl p-5 border border-border transition-all duration-500 ${radarInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+              <h3 className="font-semibold text-foreground mb-3 text-sm">Meal Quality by Time</h3>
+              <ResponsiveContainer width="100%" height={160}>
+                <RadarChart data={radarData}>
+                  <PolarGrid stroke="hsl(var(--border))" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                  <Radar name="Score" dataKey="A" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} isAnimationActive={radarInView} animationDuration={1200} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
           {/* Filters */}
           <div className="flex gap-2 flex-wrap animate-fadeInUp" style={{ animationDelay: '200ms', animationFillMode: 'both', opacity: 0 }}>
             {filters.map((f) => (
@@ -100,7 +146,7 @@ export default function HistoryPage() {
           {/* List */}
           <div ref={listRef} className="space-y-3">
             {items.map((h, i) => (
-              <HistoryCard key={h.id} {...h} index={i} />
+              <HistoryCard key={h.id} {...h} image={foodImageMap[h.foodName.toLowerCase()]} index={i} />
             ))}
           </div>
         </div>
