@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, LineChart, Line, RadialBarChart, RadialBar, Legend } from 'recharts';
 import { Activity, Utensils, ShieldCheck, Check, X, Bell } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import Sidebar from '@/components/Sidebar';
@@ -8,7 +8,7 @@ import StatCard from '@/components/StatCard';
 import ConditionBadge from '@/components/ConditionBadge';
 import StreakTracker from '@/components/StreakTracker';
 import DailyTipCard from '@/components/DailyTipCard';
-import { weekData } from '@/data/mockData';
+import { weekData, monthlyTrend, nutrientData, mealTimeData, gutScoreHistory } from '@/data/mockData';
 import { useInView } from '@/hooks/useInView';
 import { staggerDelay } from '@/utils/animations';
 
@@ -19,6 +19,8 @@ const recentChecks = [
   { name: 'Idli', rating: 'good' as const, time: '2h ago' },
   { name: 'Coffee', rating: 'poor' as const, time: '3h ago' },
   { name: 'Curd Rice', rating: 'good' as const, time: '1d ago' },
+  { name: 'Biryani', rating: 'moderate' as const, time: '1d ago' },
+  { name: 'Oats', rating: 'good' as const, time: '2d ago' },
 ];
 
 const ratingBadge = {
@@ -27,11 +29,20 @@ const ratingBadge = {
   poor: 'bg-poor/15 text-poor',
 };
 
+const radialData = [
+  { name: 'Fiber', value: 72, fill: 'hsl(var(--good))' },
+  { name: 'Protein', value: 58, fill: 'hsl(var(--primary))' },
+  { name: 'Probiotics', value: 85, fill: 'hsl(var(--moderate))' },
+];
+
 export default function Dashboard() {
   const { userName, foodHistory, weeklyScore } = useUser();
   const [chartRef, chartInView] = useInView(0.2);
   const [foodsRef, foodsInView] = useInView(0.1);
   const [recentRef, recentInView] = useInView(0.1);
+  const [trendRef, trendInView] = useInView(0.2);
+  const [mealRef, mealInView] = useInView(0.2);
+  const [scoreRef, scoreInView] = useInView(0.2);
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();
@@ -100,14 +111,58 @@ export default function Dashboard() {
               <BarChart data={weekData}>
                 <XAxis dataKey="day" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                  labelStyle={{ color: 'hsl(var(--foreground))' }}
-                  cursor={{ fill: 'hsl(var(--muted)/0.3)' }}
-                />
+                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} labelStyle={{ color: 'hsl(var(--foreground))' }} cursor={{ fill: 'hsl(var(--muted)/0.3)' }} />
                 <Bar dataKey="good" stackId="a" fill="hsl(var(--good))" radius={[0, 0, 0, 0]} isAnimationActive={chartInView} animationDuration={1200} animationEasing="ease-out" />
                 <Bar dataKey="moderate" stackId="a" fill="hsl(var(--moderate))" radius={[0, 0, 0, 0]} isAnimationActive={chartInView} animationDuration={1200} animationEasing="ease-out" />
                 <Bar dataKey="poor" stackId="a" fill="hsl(var(--poor))" radius={[4, 4, 0, 0]} isAnimationActive={chartInView} animationDuration={1200} animationEasing="ease-out" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Gut Score Line + Nutrient Radial */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div ref={scoreRef} className={`bg-card rounded-2xl p-5 shadow-sm border border-border transition-all duration-500 ${scoreInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+              <h2 className="font-semibold text-foreground mb-3 text-sm">Daily Gut Score</h2>
+              <ResponsiveContainer width="100%" height={180}>
+                <AreaChart data={gutScoreHistory}>
+                  <defs>
+                    <linearGradient id="dashScoreGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 10]} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
+                  <Area type="monotone" dataKey="score" stroke="hsl(var(--primary))" fill="url(#dashScoreGrad)" strokeWidth={2} isAnimationActive={scoreInView} animationDuration={1200} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div ref={trendRef} className={`bg-card rounded-2xl p-5 shadow-sm border border-border transition-all duration-500 ${trendInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+              <h2 className="font-semibold text-foreground mb-3 text-sm">Monthly Progress</h2>
+              <ResponsiveContainer width="100%" height={180}>
+                <LineChart data={monthlyTrend}>
+                  <XAxis dataKey="week" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 10]} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
+                  <Line type="monotone" dataKey="score" stroke="hsl(var(--good))" strokeWidth={3} dot={{ r: 5, fill: 'hsl(var(--good))' }} isAnimationActive={trendInView} animationDuration={1200} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Meal Time Analysis */}
+          <div ref={mealRef} className={`bg-card rounded-2xl p-5 shadow-sm border border-border transition-all duration-500 ${mealInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+            <h2 className="font-semibold text-foreground mb-4">Meal-wise Food Quality</h2>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={mealTimeData} layout="vertical">
+                <XAxis type="number" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="time" type="category" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} axisLine={false} tickLine={false} width={70} />
+                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }} />
+                <Bar dataKey="good" stackId="a" fill="hsl(var(--good))" radius={[0, 0, 0, 0]} isAnimationActive={mealInView} animationDuration={1200} />
+                <Bar dataKey="moderate" stackId="a" fill="hsl(var(--moderate))" isAnimationActive={mealInView} animationDuration={1200} />
+                <Bar dataKey="poor" stackId="a" fill="hsl(var(--poor))" radius={[0, 4, 4, 0]} isAnimationActive={mealInView} animationDuration={1200} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -146,12 +201,36 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Nutrient Intake */}
+          <div className="bg-card rounded-2xl p-5 shadow-sm border border-border animate-fadeInUp" style={{ animationDelay: '400ms', animationFillMode: 'both', opacity: 0 }}>
+            <h2 className="font-semibold text-foreground mb-4">Nutrient Intake Score</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {nutrientData.map((n, i) => (
+                <div key={n.name} className="text-center" style={staggerDelay(i, 80)}>
+                  <div className="relative w-16 h-16 mx-auto mb-2">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="15.5" fill="none" stroke="hsl(var(--border))" strokeWidth="3" />
+                      <circle cx="18" cy="18" r="15.5" fill="none" stroke={n.color} strokeWidth="3" strokeLinecap="round"
+                        strokeDasharray={`${n.value} ${100 - n.value}`}
+                        style={{ transition: 'stroke-dasharray 1.5s ease-out' }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-sm font-bold text-foreground">{n.value}%</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">{n.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Recent */}
           <div ref={recentRef} className={`transition-all duration-500 ${recentInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
             <h2 className="font-semibold text-foreground mb-3">Recent checks</h2>
             <div className="flex gap-3 overflow-x-auto pb-2">
               {recentChecks.map((r, i) => (
-                <div key={r.name} className="flex-shrink-0 bg-card border border-border rounded-2xl px-4 py-3 flex items-center gap-3 hover:shadow-md hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 cursor-default animate-fadeInRight" style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both', opacity: 0 }}>
+                <div key={`${r.name}-${i}`} className="flex-shrink-0 bg-card border border-border rounded-2xl px-4 py-3 flex items-center gap-3 hover:shadow-md hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 cursor-default animate-fadeInRight" style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both', opacity: 0 }}>
                   <span className="font-medium text-foreground text-sm">{r.name}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${ratingBadge[r.rating]}`}>{r.rating}</span>
                   <span className="text-xs text-muted-foreground">{r.time}</span>
