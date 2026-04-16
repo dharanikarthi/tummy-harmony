@@ -11,11 +11,21 @@ const conditionColors: Record<string, string> = {
 
 export default function ConditionBadge({ condition }: { condition?: string }) {
   const { gutCondition } = useUser();
-  const c = condition || gutCondition;
-  const color = conditionColors[c] || 'bg-muted text-muted-foreground';
+  const raw = condition || gutCondition;
+  const parts = raw.split(',').map((s) => s.trim()).filter(Boolean);
+
+  if (parts.length === 0) return null;
+
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${color}`}>
-      {c}
-    </span>
+    <div className="flex flex-wrap gap-1.5">
+      {parts.map((c) => {
+        const color = conditionColors[c] || 'bg-muted text-muted-foreground';
+        return (
+          <span key={c} className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${color}`}>
+            {c}
+          </span>
+        );
+      })}
+    </div>
   );
 }

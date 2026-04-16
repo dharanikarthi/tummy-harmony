@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CircleDot, Flame, AlertCircle, Dna, Zap, Leaf, Check, Sparkles, BarChart3, Utensils } from 'lucide-react';
+import { CircleDot, Flame, AlertCircle, Dna, Zap, Leaf, Check, Sparkles, BarChart3, Utensils, PlusCircle } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import ProgressBar from '@/components/ProgressBar';
 import ConfettiBlast from '@/components/ConfettiBlast';
@@ -24,11 +24,24 @@ const features = [
 export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
-  const [condition, setCondition] = useState('');
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [otherCondition, setOtherCondition] = useState('');
+  const [showOtherInput, setShowOtherInput] = useState(false);
   const [direction, setDirection] = useState<'left' | 'right'>('right');
   const [showConfetti, setShowConfetti] = useState(false);
   const { setUserName, setGutCondition } = useUser();
   const navigate = useNavigate();
+
+  const toggleCondition = (condName: string) => {
+    setSelectedConditions((prev) =>
+      prev.includes(condName) ? prev.filter((c) => c !== condName) : [...prev, condName]
+    );
+  };
+
+  const allConditions = [
+    ...selectedConditions,
+    ...(otherCondition.trim() ? [otherCondition.trim()] : []),
+  ];
 
   const goToStep = (next: number) => {
     setDirection(next > step ? 'right' : 'left');
@@ -38,7 +51,7 @@ export default function Onboarding() {
 
   const handleFinish = () => {
     setUserName(name);
-    setGutCondition(condition);
+    setGutCondition(allConditions.join(', '));
     navigate('/dashboard');
   };
 
@@ -112,15 +125,24 @@ export default function Onboarding() {
       {step === 2 && (
         <div className="max-w-3xl mx-auto px-6 py-12">
           <h2 className="text-3xl font-bold text-foreground mb-2 animate-fadeInDown">What's your gut condition?</h2>
-          <p className="text-muted-foreground mb-8 animate-fadeInUp" style={{ animationDelay: '100ms', animationFillMode: 'both', opacity: 0 }}>We'll personalize everything based on your answer</p>
+          <p className="text-muted-foreground mb-2 animate-fadeInUp" style={{ animationDelay: '100ms', animationFillMode: 'both', opacity: 0 }}>
+            Select all that apply — we'll personalize everything based on your answers
+          </p>
+          {selectedConditions.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4 animate-fadeInUp">
+              {allConditions.map((c) => (
+                <span key={c} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">{c}</span>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             {conditions.map((c, i) => {
-              const selected = condition === c.name;
+              const selected = selectedConditions.includes(c.name);
               return (
                 <button
                   key={c.name}
-                  onClick={() => setCondition(c.name)}
+                  onClick={() => toggleCondition(c.name)}
                   className={`relative p-5 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-md active:scale-[0.98] animate-fadeInUp ${
                     selected ? 'border-primary bg-gradient-to-br from-primary/5 to-good/5' : 'border-border bg-card hover:border-muted-foreground/30'
                   }`}
@@ -139,11 +161,40 @@ export default function Onboarding() {
             })}
           </div>
 
+          {/* Other Condition Section */}
+          <div className="mb-6 animate-fadeInUp" style={{ animationDelay: '550ms', animationFillMode: 'both', opacity: 0 }}>
+            {!showOtherInput ? (
+              <button
+                onClick={() => setShowOtherInput(true)}
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl border-2 border-dashed border-border bg-card hover:border-primary/50 text-muted-foreground hover:text-foreground transition-all duration-300 w-full"
+              >
+                <PlusCircle className="w-5 h-5 text-primary" />
+                <span className="text-sm font-medium">Add another condition not listed above</span>
+              </button>
+            ) : (
+              <div className="bg-card border-2 border-primary/30 rounded-2xl p-4 animate-scaleIn">
+                <label className="text-sm font-semibold text-foreground mb-2 block">Other Condition</label>
+                <input
+                  value={otherCondition}
+                  onChange={(e) => setOtherCondition(e.target.value)}
+                  placeholder="e.g. Celiac Disease, Ulcerative Colitis..."
+                  className="w-full border-2 border-border rounded-xl px-4 py-2.5 text-foreground bg-background placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-all duration-300 text-sm"
+                  autoFocus
+                />
+                {otherCondition.trim() && (
+                  <p className="text-xs text-good mt-2 flex items-center gap-1 animate-fadeInUp">
+                    <Check className="w-3 h-3" /> Will be added to your profile
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
           <button
-            disabled={!condition}
+            disabled={allConditions.length === 0}
             onClick={() => goToStep(3)}
             className="w-full bg-primary text-primary-foreground rounded-2xl py-3.5 font-semibold hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-40 disabled:hover:scale-100 hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)] animate-fadeInUp"
-            style={{ animationDelay: '500ms', animationFillMode: 'both', opacity: 0 }}
+            style={{ animationDelay: '600ms', animationFillMode: 'both', opacity: 0 }}
           >
             Continue
           </button>
@@ -171,8 +222,10 @@ export default function Onboarding() {
           <h2 className="text-3xl font-bold text-foreground mb-2 animate-fadeInUp" style={{ animationDelay: '1000ms', animationFillMode: 'both', opacity: 0 }}>
             You're all set, <span className="text-primary underline decoration-primary/30 decoration-2 underline-offset-4">{name}</span>!
           </h2>
-          <div className="mb-8 animate-popIn" style={{ animationDelay: '1200ms', animationFillMode: 'both', opacity: 0 }}>
-            <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold">{condition}</span>
+          <div className="mb-8 flex flex-wrap gap-2 justify-center animate-popIn" style={{ animationDelay: '1200ms', animationFillMode: 'both', opacity: 0 }}>
+            {allConditions.map((c) => (
+              <span key={c} className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold">{c}</span>
+            ))}
           </div>
 
           <div className="grid gap-4 mb-8">

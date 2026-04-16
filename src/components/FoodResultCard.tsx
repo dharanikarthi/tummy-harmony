@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ArrowRight, Lightbulb, Check } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell } from 'recharts';
 import DangerMeter from './DangerMeter';
 
 interface FoodResult {
@@ -22,6 +23,37 @@ const ratingLabels = {
   poor: 'AVOID THIS',
 };
 
+function generateNutrientData(rating: 'good' | 'moderate' | 'poor') {
+  const base = rating === 'good' ? 80 : rating === 'moderate' ? 55 : 25;
+  return [
+    { name: 'Gut Safety', value: base + Math.floor(Math.random() * 15), fill: 'hsl(var(--good))' },
+    { name: 'Digestion', value: Math.min(100, base + 5 + Math.floor(Math.random() * 10)), fill: 'hsl(var(--primary))' },
+    { name: 'Nutrition', value: 40 + Math.floor(Math.random() * 40), fill: 'hsl(var(--moderate))' },
+    { name: 'Acid Level', value: rating === 'poor' ? 70 + Math.floor(Math.random() * 20) : 20 + Math.floor(Math.random() * 30), fill: 'hsl(var(--poor))' },
+    { name: 'Inflammation', value: rating === 'poor' ? 65 + Math.floor(Math.random() * 20) : 15 + Math.floor(Math.random() * 25), fill: 'hsl(var(--poor))' },
+  ];
+}
+
+function generateRadarData(rating: 'good' | 'moderate' | 'poor') {
+  const base = rating === 'good' ? 80 : rating === 'moderate' ? 55 : 30;
+  return [
+    { subject: 'Fiber', A: Math.min(100, base + Math.floor(Math.random() * 20)) },
+    { subject: 'Protein', A: 30 + Math.floor(Math.random() * 50) },
+    { subject: 'Vitamins', A: 40 + Math.floor(Math.random() * 40) },
+    { subject: 'Probiotics', A: rating === 'good' ? 60 + Math.floor(Math.random() * 30) : 10 + Math.floor(Math.random() * 30) },
+    { subject: 'Antioxidants', A: 30 + Math.floor(Math.random() * 40) },
+    { subject: 'Minerals', A: 35 + Math.floor(Math.random() * 40) },
+  ];
+}
+
+const barColors = [
+  'hsl(var(--good))',
+  'hsl(var(--primary))',
+  'hsl(var(--moderate))',
+  'hsl(var(--poor))',
+  'hsl(var(--poor))',
+];
+
 interface Props {
   result: FoodResult;
   onSave: () => void;
@@ -30,6 +62,8 @@ interface Props {
 
 export default function FoodResultCard({ result, onSave, onCheckAnother }: Props) {
   const [saved, setSaved] = useState(false);
+  const [nutrientData] = useState(() => generateNutrientData(result.rating));
+  const [radarData] = useState(() => generateRadarData(result.rating));
 
   const handleSave = () => {
     setSaved(true);
@@ -50,7 +84,45 @@ export default function FoodResultCard({ result, onSave, onCheckAnother }: Props
 
       <hr className="border-border" />
 
-      <div className="border-l-4 border-primary pl-4 animate-fadeInUp" style={{ animationDelay: '2000ms', animationFillMode: 'both', opacity: 0 }}>
+      {/* Gut Compatibility Chart */}
+      <div className="animate-fadeInUp" style={{ animationDelay: '1800ms', animationFillMode: 'both', opacity: 0 }}>
+        <h3 className="text-sm font-semibold text-muted-foreground mb-3">Gut Compatibility Breakdown</h3>
+        <div className="bg-muted/30 rounded-2xl p-4">
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={nutrientData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'hsl(var(--foreground))' }} axisLine={false} tickLine={false} width={85} />
+              <Tooltip
+                contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+                formatter={(value: number) => [`${value}%`, '']}
+              />
+              <Bar dataKey="value" radius={[0, 6, 6, 0]} isAnimationActive animationDuration={1200} animationEasing="ease-out">
+                {nutrientData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={barColors[index]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Nutrient Profile Radar */}
+      <div className="animate-fadeInUp" style={{ animationDelay: '2000ms', animationFillMode: 'both', opacity: 0 }}>
+        <h3 className="text-sm font-semibold text-muted-foreground mb-3">Nutrient Profile</h3>
+        <div className="bg-muted/30 rounded-2xl p-4 flex justify-center">
+          <ResponsiveContainer width="100%" height={220}>
+            <RadarChart data={radarData} outerRadius="70%">
+              <PolarGrid stroke="hsl(var(--border))" />
+              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+              <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+              <Radar name="Nutrients" dataKey="A" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.25} isAnimationActive animationDuration={1200} />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="border-l-4 border-primary pl-4 animate-fadeInUp" style={{ animationDelay: '2200ms', animationFillMode: 'both', opacity: 0 }}>
         <h3 className="text-sm font-semibold text-muted-foreground mb-1">Why?</h3>
         <p className="text-foreground text-sm leading-relaxed">{result.explanation}</p>
       </div>
