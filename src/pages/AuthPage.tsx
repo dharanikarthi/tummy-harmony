@@ -15,11 +15,7 @@ const KEY = 'gutsense_user';
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const {
-    setUserName, setUserEmail, setGutCondition, setAllConditions,
-    setCustomCondition, setAge, setGender, setHeight, setWeight,
-    setBmi, setBmiCategory, setHealthGoals, setSetupCompleted,
-  } = useUser();
+  const { setUserName, setUserEmail, restoreFromStorage } = useUser();
   const [mode, setMode] = useState<'signup' | 'login'>('signup');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -32,22 +28,6 @@ export default function AuthPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const pwStrength = getPasswordStrength(password);
-
-  function restoreContext(u: Record<string, unknown>) {
-    setUserName((u.name as string) || 'Dharani');
-    setUserEmail((u.email as string) || VALID_EMAIL);
-    if (u.gutCondition)   setGutCondition(u.gutCondition as string);
-    if (u.allConditions)  setAllConditions(u.allConditions as string[]);
-    if (u.customCondition) setCustomCondition(u.customCondition as string);
-    if (u.age)            setAge(u.age as number);
-    if (u.gender)         setGender(u.gender as string);
-    if (u.height)         setHeight(u.height as number);
-    if (u.weight)         setWeight(u.weight as number);
-    if (u.bmi)            setBmi(u.bmi as number);
-    if (u.bmiCategory)    setBmiCategory(u.bmiCategory as string);
-    if (u.goals)          setHealthGoals(u.goals as string[]);
-    if (u.setupCompleted) setSetupCompleted(true);
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -62,43 +42,40 @@ export default function AuthPage() {
     setIsLoading(true);
     await new Promise((r) => setTimeout(r, 700));
 
-    // Validate against hardcoded credentials
     if (email.trim().toLowerCase() !== VALID_EMAIL || password !== VALID_PASS) {
       setIsLoading(false);
       setErrors({ form: mode === 'signup' ? 'This is a private app. Please use the correct credentials.' : 'Invalid email or password.' });
       return;
     }
 
-    // Load saved user data
     const savedRaw = localStorage.getItem(KEY);
     const savedUser: Record<string, unknown> = savedRaw ? JSON.parse(savedRaw) : {};
 
-    // Clear loggedOut flag
-    localStorage.setItem(KEY, JSON.stringify({ ...savedUser, loggedOut: false }));
+    // Mark as logged in
+    const updatedUser = { ...savedUser, loggedOut: false };
 
-    // If setup already done, go straight to dashboard
-    if (savedUser.setupCompleted === true) {
-      restoreContext(savedUser);
-      setIsLoading(false);
-      toast.success(`Welcome back, ${savedUser.name || 'Dharani'}!`);
-      navigate('/dashboard');
-      return;
+    if (mode === 'signup' && !savedUser.name) {
+      // First ever signup — set name
+      updatedUser.name = name.trim() || 'Dharani';
+      updatedUser.email = VALID_EMAIL;
+      updatedUser.password = VALID_PASS;
+      updatedUser.setupCompleted = false;
     }
 
-    // First time — save base user (signup path)
-    const baseUser = {
-      ...savedUser,
-      name: (name.trim() || (savedUser.name as string) || 'Dharani'),
-      email: VALID_EMAIL,
-      password: VALID_PASS,
-      loggedOut: false,
-      setupCompleted: false,
-    };
-    localStorage.setItem(KEY, JSON.stringify(baseUser));
-    restoreContext(baseUser);
+    localStorage.setItem(KEY, JSON.stringify(updatedUser));
+
+    // Atomically restore ALL context from localStorage in one setState call
+    restoreFromStorage();
+
     setIsLoading(false);
-    toast.success('Account ready! Let\'s set up your health profile.');
-    navigate('/setup');
+
+    if (updatedUser.setupCompleted === true) {
+      toast.success(`Welcome back, ${updatedUser.name || 'Dharani'}!`);
+      navigate('/dashboard');
+    } else {
+      toast.success('Account ready! Let\'s set up your health profile.');
+      navigate('/setup');
+    }
   }
 
   function switchMode(m: 'signup' | 'login') {

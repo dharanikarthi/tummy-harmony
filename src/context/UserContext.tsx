@@ -61,6 +61,7 @@ interface UserContextType extends UserState {
   setHealthGoals: (goals: string[]) => void;
   setSetupCompleted: (v: boolean) => void;
   addSymptomLog: (log: SymptomLog) => void;
+  restoreFromStorage: () => void;
   logout: () => void;
 }
 
@@ -188,6 +189,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setHealthGoals:   set('healthGoals'),
     setSetupCompleted: set('setupCompleted'),
     addSymptomLog: (log) => setState((s) => ({ ...s, symptomLogs: [log, ...s.symptomLogs] })),
+    // Atomically reload ALL state from localStorage — used after login
+    restoreFromStorage: () => {
+      const fresh = loadState();
+      setState(fresh);
+    },
     logout: () => {
       // Mark logged out in localStorage but KEEP all setup/health data intact
       try {
