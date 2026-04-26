@@ -15,7 +15,7 @@ export default function DangerMeter({ rating }: Props) {
   const [arcVisible, setArcVisible] = useState(false);
   const [labelVisible, setLabelVisible] = useState(false);
 
-  const config = ratingConfig[rating];
+  const config = ratingConfig[rating] ?? ratingConfig.moderate;
 
   useEffect(() => {
     const t1 = setTimeout(() => setArcVisible(true), 50);

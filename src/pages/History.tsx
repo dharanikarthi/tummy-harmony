@@ -52,10 +52,10 @@ export default function HistoryPage() {
   const scoreMsg = weeklyScore > 7 ? 'Excellent gut week!' : weeklyScore > 4 ? 'Room to improve' : "Let's do better this week";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className="lg:ml-64 pb-24 lg:pb-8">
-        <div className="p-4 lg:p-6 max-w-3xl mx-auto space-y-6">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6 pb-24 lg:pb-6">
           {/* Header */}
           <div className="flex items-center justify-between animate-fadeInUp">
             <h1 className="text-2xl font-bold text-foreground">Food History</h1>
@@ -70,7 +70,7 @@ export default function HistoryPage() {
           </div>
 
           {/* Weekly Summary */}
-          <div className="bg-gradient-to-r from-primary to-good rounded-3xl p-6 text-primary-foreground flex flex-col sm:flex-row items-center gap-6 animate-fadeInUp" style={{ animationDelay: '100ms', animationFillMode: 'both', opacity: 0 }}>
+          <div className="bg-gradient-to-r from-primary to-good rounded-3xl p-6 text-primary-foreground flex flex-col sm:flex-row items-center gap-6">
             <div className="w-32 h-32 flex-shrink-0 relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -129,7 +129,7 @@ export default function HistoryPage() {
           </div>
 
           {/* Filters */}
-          <div className="flex gap-2 flex-wrap animate-fadeInUp" style={{ animationDelay: '200ms', animationFillMode: 'both', opacity: 0 }}>
+          <div className="flex gap-2 flex-wrap">
             {filters.map((f) => (
               <button
                 key={f}

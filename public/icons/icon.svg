@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Teal background circle -->
+  <circle cx="256" cy="256" r="256" fill="#0d9488"/>
+  <!-- Leaf shape -->
+  <path d="M256 96
+    C256 96 160 160 160 272
+    C160 336 200 384 256 400
+    C312 384 352 336 352 272
+    C352 160 256 96 256 96Z"
+    fill="white" opacity="0.95"/>
+  <!-- Stem -->
+  <line x1="256" y1="400" x2="256" y2="440"
+    stroke="white" stroke-width="16" stroke-linecap="round" opacity="0.9"/>
+  <!-- Leaf vein -->
+  <path d="M256 160 C256 160 256 320 256 400"
+    stroke="#0d9488" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <!-- Side veins -->
+  <path d="M256 220 C230 240 210 260 200 280"
+    stroke="#0d9488" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <path d="M256 220 C282 240 302 260 312 280"
+    stroke="#0d9488" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <path d="M256 280 C238 295 224 310 218 325"
+    stroke="#0d9488" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.5"/>
+  <path d="M256 280 C274 295 288 310 294 325"
+    stroke="#0d9488" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.5"/>
+</svg>

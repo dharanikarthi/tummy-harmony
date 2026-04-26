@@ -1,5 +1,3 @@
-export const staggerDelay = (index: number, base = 100) => ({
+export const staggerDelay = (index: number, base = 100): React.CSSProperties => ({
   animationDelay: `${index * base}ms`,
-  animationFillMode: 'both' as const,
-  opacity: 0,
 });

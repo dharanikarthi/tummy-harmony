@@ -71,10 +71,10 @@ export default function WeeklyReport() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar />
-      <div className="lg:ml-64 pb-24 lg:pb-8">
-        <div className="p-4 lg:p-6 max-w-2xl mx-auto space-y-6">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6 pb-24 lg:pb-6">
 
           {/* Header */}
           <div className="bg-gradient-to-r from-primary to-good rounded-3xl p-6 text-primary-foreground animate-fadeInDown print:shadow-none">
@@ -93,7 +93,7 @@ export default function WeeklyReport() {
           </div>
 
           {/* Score Hero */}
-          <div ref={scoreRef} className={`flex flex-col items-center py-6 print:shadow-none transition-all duration-500 ${scoreInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
+          <div ref={scoreRef} className={`flex flex-col items-center transition-all duration-500 ${scoreInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
             <div className="relative w-32 h-32">
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(var(--border))" strokeWidth="8" />
@@ -217,7 +217,7 @@ export default function WeeklyReport() {
           </div>
 
           {/* Advice */}
-          <div className="bg-card rounded-2xl border border-border p-5 border-l-4 border-l-primary animate-fadeInUp print:shadow-none" style={{ animationDelay: '1500ms', animationFillMode: 'both', opacity: 0 }}>
+          <div className="bg-card rounded-2xl border border-border p-5 border-l-4 border-l-primary print:shadow-none">
             <h3 className="font-semibold text-foreground mb-2">GutSense says...</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               You made {goodCount} great food choices this week. Try to reduce your intake of fried and spicy foods, and focus on gut-soothing options like curd rice and bananas. Consistency is key — keep checking your foods daily for lasting improvement.
@@ -225,7 +225,7 @@ export default function WeeklyReport() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 print:hidden animate-fadeInUp" style={{ animationDelay: '1800ms', animationFillMode: 'both', opacity: 0 }}>
+          <div className="flex flex-col sm:flex-row gap-3 print:hidden">
             <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 bg-poor text-poor-foreground rounded-2xl py-3 font-semibold hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
               <FileText className="w-5 h-5" /> Download PDF
             </button>
