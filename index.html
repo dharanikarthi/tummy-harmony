@@ -1,13 +1,21 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C2VQM8P0DX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-C2VQM8P0DX');
+    </script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>GutSense — Your Gut Health Companion</title>
     <meta name="description" content="GutSense - AI-powered personalized gut health food analyzer. Check if any food is safe for your specific gut condition." />
     <meta name="author" content="GutSense" />
-
+    
     <!-- PWA -->
     <meta name="application-name" content="GutSense" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,21 +26,21 @@
     <meta name="msapplication-TileColor" content="#0d9488" />
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
     <link rel="apple-touch-icon" href="/icons/icon.svg" />
-
+    
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="GutSense - Gut Health Companion" />
     <meta property="og:description" content="AI-powered personalized gut health food analyzer" />
     <meta property="og:image" content="/icons/icon.svg" />
-
+    
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="GutSense - Gut Health Companion" />
     <meta name="twitter:description" content="AI-powered personalized gut health food analyzer" />
     <meta name="twitter:image" content="/icons/icon.svg" />
-  </head>
-  <body>
+</head>
+<body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-  </body>
+</body>
 </html>
